@@ -11,9 +11,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.bm.android.tictactoe.R
@@ -24,6 +22,8 @@ class LoginFragment : Fragment()  {
         context as LoginFragmentInterface
     }
     private lateinit var mSignupLink:TextView
+    private lateinit var mLoginLayout: LinearLayout
+    private lateinit var mProgressBar: ProgressBar
 
     interface LoginFragmentInterface  {
         fun onStartSignupFragment()
@@ -37,6 +37,8 @@ class LoginFragment : Fragment()  {
         val loginButton = v.findViewById<Button>(R.id.login_button)
         val usernameTextView = v.findViewById<TextView>(R.id.username_input)
         val passwordTextView = v.findViewById<TextView>(R.id.password_input)
+        mLoginLayout = v.findViewById(R.id.login_layout)
+        mProgressBar = v.findViewById(R.id.auth_progress_bar)
 
         Log.i("test", "user is logged in: " + FirebaseAuth.getInstance().currentUser)
         mSignupLink = v.findViewById(R.id.go_to_signup)
@@ -46,6 +48,7 @@ class LoginFragment : Fragment()  {
             val username = usernameTextView.text.toString()
             val password = passwordTextView.text.toString()
 
+            showProgressBar()
             mViewModel.loginUser(username, password)
         }
 
@@ -55,6 +58,7 @@ class LoginFragment : Fragment()  {
             } else {
                 Toast.makeText(context, it.toString(), Toast.LENGTH_LONG).show()
             }
+            hideProgressBar()
         })
 
         return v
@@ -72,5 +76,15 @@ class LoginFragment : Fragment()  {
         mSignupLink.text = spannableString
         mSignupLink.highlightColor = Color.TRANSPARENT
         mSignupLink.movementMethod = LinkMovementMethod.getInstance()
+    }
+
+    fun showProgressBar()   {
+        mProgressBar.visibility = View.VISIBLE
+        mLoginLayout.visibility = View.GONE
+    }
+
+    fun hideProgressBar()   {
+        mProgressBar.visibility = View.GONE
+        mLoginLayout.visibility = View.VISIBLE
     }
 }

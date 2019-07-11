@@ -60,13 +60,13 @@ class TicTacToeActivity : AppCompatActivity(),
             .commit()
     }
 
-//
-//    private fun addPreviousToBackStack(fragment: Fragment, previousFragmentTag:String) {
-//        fm.beginTransaction()
-//            .replace(R.id.fragment_container, fragment)
-//            .addToBackStack(previousFragmentTag)
-//            .commit()
-//    }
+
+    private fun addPreviousToBackStack(fragment: Fragment, previousFragmentTag:String) {
+        fm.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .addToBackStack(previousFragmentTag)
+            .commit()
+    }
 
     /* used by menu_log_out item */
     private fun onLogoutUser()  {
