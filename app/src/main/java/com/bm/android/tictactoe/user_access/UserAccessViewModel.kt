@@ -6,14 +6,17 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.bm.android.tictactoe.repositories.UserAccessRepository
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentSnapshot
 
 class UserAccessViewModel : ViewModel() {
     private var signupStatus =  MutableLiveData<String>()
+    private var loginStatus = MutableLiveData<String>()
     private val mAccessRepository:UserAccessRepository = UserAccessRepository()
     private val mAuth = FirebaseAuth.getInstance()
     private val TAG = "UserAccessViewModel"
 
     fun getSignupStatus(): LiveData<String> = signupStatus
+    fun getLoginStatus(): LiveData<String> = loginStatus
 
     /***********************************************************************
      * Called by SignupFragment: sets off chain of methods checkFirestore
@@ -77,4 +80,45 @@ class UserAccessViewModel : ViewModel() {
     fun clearSignupStatus() {
         signupStatus = MutableLiveData()
     }
+
+    fun clearLoginStatus()  {
+        loginStatus = MutableLiveData()
+    }
+
+
+    /*************************
+     * Called by LoginFragment
+     ************************/
+    fun loginUser(username:String, password:String)    {
+        mAccessRepository.getUserDocument(username)
+            .addOnSuccessListener {
+                if (it.exists())    {
+                    val email = mAccessRepository.getEmail(it)
+                    loginWithEmail(email, password)
+                } else {
+                    /* Username does not exist */
+                    loginStatus.value = "Username does not exist"
+                }
+            }
+            .addOnFailureListener {
+                /* exception with accessing database */
+                loginStatus.value = it.message.toString()
+            }
+    }
+
+    private fun loginWithEmail(email:String, password:String)   {
+        mAccessRepository.signInWithEmail(email, password, mAuth)
+            .addOnSuccessListener {
+                if (mAuth.currentUser!!.isEmailVerified)    {
+                    loginStatus.value = "Login was successful"
+                } else {
+                    mAuth.signOut()
+                    loginStatus.value = "Check your email to verify your account"
+                }
+            }
+            .addOnFailureListener {
+                loginStatus.value = it.message.toString()
+            }
+    }
+
 }

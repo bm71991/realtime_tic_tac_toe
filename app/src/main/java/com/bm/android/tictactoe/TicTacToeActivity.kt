@@ -7,10 +7,7 @@ import android.view.MenuItem
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProviders
-import com.bm.android.tictactoe.user_access.LoginFragment
-import com.bm.android.tictactoe.user_access.SignupFragment
-import com.bm.android.tictactoe.user_access.SignupSuccessFragment
-import com.bm.android.tictactoe.user_access.UserAccessViewModel
+import com.bm.android.tictactoe.user_access.*
 import com.google.firebase.auth.FirebaseAuth
 
 class TicTacToeActivity : AppCompatActivity(),
@@ -62,6 +59,7 @@ class TicTacToeActivity : AppCompatActivity(),
             .replace(R.id.fragment_container, fragment)
             .commit()
     }
+
 //
 //    private fun addPreviousToBackStack(fragment: Fragment, previousFragmentTag:String) {
 //        fm.beginTransaction()
@@ -81,7 +79,6 @@ class TicTacToeActivity : AppCompatActivity(),
     /* used in LoginFragment */
     override fun onStartSignupFragment()    {
         userAccessVm.clearSignupStatus()
-        /* LoginFragment will be added to backstack */
         replaceFragment(SignupFragment())
     }
 
@@ -92,7 +89,13 @@ class TicTacToeActivity : AppCompatActivity(),
 
     /* Used in TicTacToeActivity.onLogoutUser(), SignupSuccessFragment */
     override fun onStartLoginFragment()  {
+        userAccessVm.clearLoginStatus()
         replaceFragment(LoginFragment())
+    }
+
+    override fun onStartLoginSuccessFragment() {
+        invalidateOptionsMenu()
+        replaceFragment(LoginSuccessFragment())
     }
 }
 

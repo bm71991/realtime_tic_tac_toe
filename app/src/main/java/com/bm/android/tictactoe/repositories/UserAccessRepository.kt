@@ -1,16 +1,13 @@
 package com.bm.android.tictactoe.repositories
 
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
-import com.google.android.gms.tasks.Continuation
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.android.gms.tasks.OnSuccessListener
+import com.bm.android.tictactoe.user_access.models.FirebaseUserInfo
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.*
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Transaction
-import kotlin.Exception
 
 /*************************************************************
  * Methods which do Firestore/Firebase Auth operations.
@@ -21,6 +18,9 @@ class UserAccessRepository {
     private val USER_COLLECTION = "users"
     private val TAG = "UserAccessRepository"
 
+    /*********************
+     * User Signup Methods
+     ********************/
     fun registerFirebaseUser(email:String, password:String, auth:FirebaseAuth):Task<AuthResult>   {
         return auth.createUserWithEmailAndPassword(email, password)
     }
@@ -56,4 +56,25 @@ class UserAccessRepository {
 
     /* Used in checkFirestore to add a user document to collection users */
     class User(var uid:String?, var email:String)
+
+    /*********************
+     * User Login Methods
+     *******************/
+    fun getUserDocument(username:String): Task<DocumentSnapshot> {
+        val userDocumentRef = db.collection(USER_COLLECTION).document(username)
+        return userDocumentRef.get()
+    }
+
+    fun getEmail(documentSnapshot: DocumentSnapshot):String   {
+        val firebaseUserInfo = getFirebaseUserObject(documentSnapshot)
+        return firebaseUserInfo.email
+    }
+
+    private fun getFirebaseUserObject(documentSnapshot: DocumentSnapshot) :FirebaseUserInfo  {
+        return documentSnapshot.toObject(FirebaseUserInfo::class.java)!!
+    }
+
+    fun signInWithEmail(email:String, password: String, auth: FirebaseAuth): Task<AuthResult>   {
+        return auth.signInWithEmailAndPassword(email, password)
+    }
 }
