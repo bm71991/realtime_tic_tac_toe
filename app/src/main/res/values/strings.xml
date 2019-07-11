@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">Tic Tac Toe</string>
+
+    /******************************************
+    User Access Strings
+    ******************************************/
+    <string name="signup">Sign up</string>
+    <string name="login">Log in</string>
+    <string name="login_title">Log in:</string>
+    <string name="password_title">Password:</string>
+    <string name="password">password</string>
+    <string name="username_title">Username:</string>
+    <string name="username">username</string>
+    <string name="login_success">Login was Successful</string>
+    <string name="find_game">Find game</string>
+    <string name="logout">Logout</string>
+    <string name="email_title">Email:</string>
+    <string name="email">email</string>
+    <string name="signup_success">
+        Signup was a success. Please check your email to finalize your account."
+    </string>
+    <string name="delete_account">Delete Account</string>
+    <string name="delete_account_text">
+        Please reenter your username and password to delete your account.
+    </string>
+    <string name="deleted_account_text">Your account has been successfully deleted.</string>
+    <string name="back_to_main">Back to Main</string>
+    <string name="logged_out_text">You have logged out.</string>
+    <string name="go_to_signup">Don\'t have an account? Sign up here.</string>
+
+    /******************************************
+    Menu Strings
+    ******************************************/
+    <string name="log_out">Log out</string>
+</resources>
