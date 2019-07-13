@@ -12,18 +12,18 @@ import com.google.firebase.auth.FirebaseAuth
 
 class LoginSuccessFragment : Fragment()  {
     private val mCallback by lazy {
-        context as SignupSuccessFragmentInterface
+        context as LoginSuccessFragmentInterface
     }
 
-    interface SignupSuccessFragmentInterface  {
-
+    interface LoginSuccessFragmentInterface  {
+        fun onStartGameFragment()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val v = inflater.inflate(R.layout.fragment_login_success, container, false)
 
-        Log.i("test", "user is logged in: " + FirebaseAuth.getInstance().currentUser)
+
         return v
     }
 }

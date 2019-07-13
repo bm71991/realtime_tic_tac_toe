@@ -15,7 +15,9 @@ import android.widget.*
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.bm.android.tictactoe.R
+import com.bm.android.tictactoe.repositories.GameRepository
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class LoginFragment : Fragment()  {
     private val mCallback by lazy {
@@ -39,6 +41,9 @@ class LoginFragment : Fragment()  {
         val passwordTextView = v.findViewById<TextView>(R.id.password_input)
         mLoginLayout = v.findViewById(R.id.login_layout)
         mProgressBar = v.findViewById(R.id.auth_progress_bar)
+
+        val gameRepository = GameRepository()
+        gameRepository.findGame()
 
         Log.i("test", "user is logged in: " + FirebaseAuth.getInstance().currentUser)
         mSignupLink = v.findViewById(R.id.go_to_signup)

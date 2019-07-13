@@ -7,13 +7,15 @@ import android.view.MenuItem
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProviders
+import com.bm.android.tictactoe.game.GameFragment
 import com.bm.android.tictactoe.user_access.*
 import com.google.firebase.auth.FirebaseAuth
 
 class TicTacToeActivity : AppCompatActivity(),
     LoginFragment.LoginFragmentInterface,
     SignupFragment.SignupFragmentInterface,
-    SignupSuccessFragment.SignupSuccessFragmentInterface {
+    SignupSuccessFragment.SignupSuccessFragmentInterface,
+    LoginSuccessFragment.LoginSuccessFragmentInterface {
     private val fm: FragmentManager by lazy {
         supportFragmentManager
     }
@@ -93,10 +95,16 @@ class TicTacToeActivity : AppCompatActivity(),
         replaceFragment(LoginFragment())
     }
 
+    /* Used in LoginFragment */
     override fun onStartLoginSuccessFragment() {
         invalidateOptionsMenu()
         replaceFragment(LoginSuccessFragment())
     }
+
+    override fun onStartGameFragment() {
+        replaceFragment(GameFragment())
+    }
+
 }
 
 
