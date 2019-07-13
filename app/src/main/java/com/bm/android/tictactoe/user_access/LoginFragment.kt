@@ -42,8 +42,6 @@ class LoginFragment : Fragment()  {
         mLoginLayout = v.findViewById(R.id.login_layout)
         mProgressBar = v.findViewById(R.id.auth_progress_bar)
 
-        val gameRepository = GameRepository()
-        gameRepository.findGame()
 
         Log.i("test", "user is logged in: " + FirebaseAuth.getInstance().currentUser)
         mSignupLink = v.findViewById(R.id.go_to_signup)

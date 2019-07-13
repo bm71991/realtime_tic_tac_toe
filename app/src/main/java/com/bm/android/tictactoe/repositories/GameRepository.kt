@@ -1,6 +1,8 @@
 package com.bm.android.tictactoe.repositories
 
 import android.util.Log
+import com.bm.android.tictactoe.game.models.Game
+import com.bm.android.tictactoe.game.models.MatchPlayersInfo
 import com.bm.android.tictactoe.game.models.PlayerPair
 import com.bm.android.tictactoe.game.models.WaitingPlayers
 import com.google.android.gms.tasks.Task
@@ -10,113 +12,63 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Transaction
 import java.util.*
 
-class GameRepository(/*  val gameSetupCallback:GameSetupInterface */)    {
+class GameRepository(private val gameSetupCallback:GameSetupInterface)   {
     interface GameSetupInterface    {
         fun onGameFound()
-        fun onOpponentFound()
+        fun onOpponentFound(playerPair: PlayerPair)
     }
 
     private val db = FirebaseFirestore.getInstance()
     private val mAuth = FirebaseAuth.getInstance()
     private val GAMES_COLLECTION = "games"
     private val TAG = "GameAccessRepository"
-    val waitingPlayersRef = db.collection(GAMES_COLLECTION)
+    val MATCHED_PLAYERS = "matched players"
+    val MADE_NEW_PAIR = "made new pair"
+    private val waitingPlayersRef = db.collection(GAMES_COLLECTION)
         .document("waitingPlayers")
 
-    fun findGame() /*  Task<Transaction> */ {
-        /*
-        	snapshot = get(player_pairs)
-	if (snapshot.exists())	{
-		loop through pair_array	(while i < array.length && gameFound == false){
-			if (pair.player2 == "")	{
-			  gameFound = true
-			  pair.player2 = this.username
-			  make new game document with id = pair.id
-		          /********put in interface
-			  viewModel.opponent = pair.player1
-			  viewModel.gameId = pair.id
-			  mCallback.toGameFragment
-			  ************/
-			}
-		}
-	}
-	if (!snapshot.exists() || gameFound == false)	{
-	  add a new pair to the array: player1 = this.username, pair.id = new UUID, currentTurn: this.username
-          mViewModel.gameId = pair.id
-	  db.collection("games").document(pair.id)
-	  .addSnapshotListener()  {
-	    if (snapshot.exists()) {
-              viewmodel.opponent = pair.player2
-              mCallback.toGameFragment()
-            }
-	  }
-	}
-         */
-        matchPlayers()
-        .addOnSuccessListener {
-            Log.i("test", it)
-        }
-        .addOnFailureListener {
-            Log.i("test", it.toString())
-        }
-    }
-
-    fun matchPlayers():Task<String> {
+    fun matchPlayers():Task<MatchPlayersInfo> {
         return db.runTransaction(
-            fun(transaction: Transaction): String {
+            fun(transaction: Transaction): MatchPlayersInfo {
             val snapshot = transaction.get(waitingPlayersRef)
             if (snapshot.exists()) {
                 val playerPairs = snapshot.toObject(WaitingPlayers::class.java)!!.playerPairs
-                var isFound = false
                 var i = 0
-
-                while (i < playerPairs.size && !isFound) {
+                while (i < playerPairs.size) {
+                    Log.i("test", "player pair size: ${playerPairs.size}")
                     var currentPair = playerPairs[i]
                     if (currentPair.player2 == "") {
-                        val newPair = PlayerPair(currentPair.player1, "bar", currentPair.id)
+                        val newPair = PlayerPair(currentPair.player1, mAuth.currentUser!!.displayName!!, currentPair.id)
                         transaction.update(
                             waitingPlayersRef, "playerPairs",
                             FieldValue.arrayUnion(newPair))
                         transaction.update(waitingPlayersRef, "playerPairs", FieldValue.arrayRemove(currentPair))
-                        return "matched players"
+                        Log.i("test", "playerPair id = " + newPair.id)
+                        gameSetupCallback.onOpponentFound(newPair)
+                        return MatchPlayersInfo(MATCHED_PLAYERS, newPair)
                     }
                     i++
                 }
-                if (!isFound) {
-                    val newPair = PlayerPair("bar", "", UUID.randomUUID().toString())
-                    transaction.update(waitingPlayersRef, "playerPairs", FieldValue.arrayUnion(newPair))
-                    return "made new pair"
-                }
+                val newPair = PlayerPair(mAuth.currentUser!!.displayName!!, "", UUID.randomUUID().toString())
+                transaction.update(waitingPlayersRef, "playerPairs", FieldValue.arrayUnion(newPair))
+                return MatchPlayersInfo(MADE_NEW_PAIR, newPair)
             }
             else {
                 throw Exception(
                     "Document \"waitingPlayers\" does not exist, though it should have been" + " created already.")
             }
-            return "exception"
         })
-
-//        fun matchPlayers(): Task<Transaction> {
-//            return db.runTransaction { transaction ->
-//                Log.i("test", " snapshot exists")
-//                // add a new pair to the array: player1 = this.username, pair.id = new UUID, currentTurn: username
-//                val snapshot = transaction.get(waitingPlayersRef)
-//                if (snapshot.exists())  {
-//                    val newPlayerPair = PlayerPair("player1", "", UUID.randomUUID().toString())
-//                    transaction.update(waitingPlayersRef, "playerPairs",
-//                        FieldValue.arrayUnion(newPlayerPair))
-//                } else {
-//                    throw Exception("Document \"waitingPlayers\" does not exist, though it should have been" +
-//                            " created already.")
-//                }
-//            }
     }
 
+    fun onPlayerMatch(gameId:String, playerPair: PlayerPair): Task<Void> {
+        val gameRef = db.collection(GAMES_COLLECTION).document(gameId)
+        val playerList = arrayListOf(playerPair.player1, playerPair.player2)
 
+        val newGame = Game(playerList, "started", "", playerPair.player1)
+        return gameRef.set(newGame)
+    }
 
-
-
-
-
-
-
+    fun deletePlayerPair(playerPair: PlayerPair): Task<Void>    {
+        return waitingPlayersRef.update("playerPairs", FieldValue.arrayRemove(playerPair))
+    }
 }
