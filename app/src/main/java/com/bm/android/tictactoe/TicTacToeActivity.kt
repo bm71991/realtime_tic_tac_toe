@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProviders
 import com.bm.android.tictactoe.game.GameFragment
+import com.bm.android.tictactoe.game.GameViewModel
 import com.bm.android.tictactoe.user_access.*
 import com.google.firebase.auth.FirebaseAuth
 
@@ -21,11 +22,13 @@ class TicTacToeActivity : AppCompatActivity(),
     }
     private val mAuth = FirebaseAuth.getInstance()
     private lateinit var userAccessVm: UserAccessViewModel
+    private lateinit var gameVm:GameViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.fragment_container)
         userAccessVm = ViewModelProviders.of(this).get(UserAccessViewModel::class.java)
+        gameVm = ViewModelProviders.of(this).get(GameViewModel::class.java)
         val fragment = fm.findFragmentById(R.id.fragment_container)
 
         if (fragment == null)   {
@@ -102,6 +105,7 @@ class TicTacToeActivity : AppCompatActivity(),
     }
 
     override fun onStartGameFragment() {
+//        gameVm.clear()
         replaceFragment(GameFragment())
     }
 

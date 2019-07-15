@@ -75,6 +75,7 @@ class UserAccessRepository {
     }
 
     fun signInWithEmail(email:String, password: String, auth: FirebaseAuth): Task<AuthResult>   {
+        Log.i("test", email)
         return auth.signInWithEmailAndPassword(email, password)
     }
 }

@@ -6,7 +6,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.bm.android.tictactoe.repositories.UserAccessRepository
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.DocumentSnapshot
 
 class UserAccessViewModel : ViewModel() {
     private var signupStatus =  MutableLiveData<String>()
@@ -90,6 +89,7 @@ class UserAccessViewModel : ViewModel() {
      * Called by LoginFragment
      ************************/
     fun loginUser(username:String, password:String)    {
+        Log.i("test", "username = " + username)
         mAccessRepository.getUserDocument(username)
             .addOnSuccessListener {
                 if (it.exists())    {

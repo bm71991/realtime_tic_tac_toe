@@ -1,21 +1,19 @@
 package com.bm.android.tictactoe.repositories
 
 import android.util.Log
+import androidx.core.view.DragStartHelper
 import com.bm.android.tictactoe.game.models.Game
 import com.bm.android.tictactoe.game.models.MatchPlayersInfo
 import com.bm.android.tictactoe.game.models.PlayerPair
 import com.bm.android.tictactoe.game.models.WaitingPlayers
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Transaction
+import com.google.firebase.firestore.*
 import java.util.*
 
 class GameRepository(private val gameSetupCallback:GameSetupInterface)   {
     interface GameSetupInterface    {
-        fun onGameFound()
-        fun onOpponentFound(playerPair: PlayerPair)
+        fun onPlayerAdded(playerAdded:String, gameStartListener: ListenerRegistration?)
     }
 
     private val db = FirebaseFirestore.getInstance()
@@ -38,13 +36,12 @@ class GameRepository(private val gameSetupCallback:GameSetupInterface)   {
                     Log.i("test", "player pair size: ${playerPairs.size}")
                     var currentPair = playerPairs[i]
                     if (currentPair.player2 == "") {
-                        val newPair = PlayerPair(currentPair.player1, mAuth.currentUser!!.displayName!!, currentPair.id)
-                        transaction.update(
-                            waitingPlayersRef, "playerPairs",
+                        val newPair = PlayerPair(currentPair.player1, mAuth.currentUser!!.displayName!!,
+                            currentPair.id)
+                        transaction.update(waitingPlayersRef, "playerPairs",
                             FieldValue.arrayUnion(newPair))
                         transaction.update(waitingPlayersRef, "playerPairs", FieldValue.arrayRemove(currentPair))
                         Log.i("test", "playerPair id = " + newPair.id)
-                        gameSetupCallback.onOpponentFound(newPair)
                         return MatchPlayersInfo(MATCHED_PLAYERS, newPair)
                     }
                     i++
@@ -70,5 +67,25 @@ class GameRepository(private val gameSetupCallback:GameSetupInterface)   {
 
     fun deletePlayerPair(playerPair: PlayerPair): Task<Void>    {
         return waitingPlayersRef.update("playerPairs", FieldValue.arrayRemove(playerPair))
+    }
+
+    fun waitForPlayerMatchup(gameId:String) {
+        val gameDocRef = db.collection(GAMES_COLLECTION).document(gameId)
+        var gameStartListener:ListenerRegistration? = null
+
+        gameStartListener =  gameDocRef.addSnapshotListener(
+            fun(snapshot: DocumentSnapshot?, e: FirebaseFirestoreException?) {
+                if (e != null) {
+                    Log.w(TAG, "Listen failed.", e)
+                    return
+                }
+                if (snapshot != null && snapshot.exists()) {
+                    val gameInfo = snapshot.toObject(Game::class.java)
+                    val addedPlayer = gameInfo!!.players[1]
+                    gameSetupCallback.onPlayerAdded(addedPlayer, gameStartListener)
+                } else {
+                    Log.d(TAG, "Current data: null")
+                }
+            })
     }
 }
