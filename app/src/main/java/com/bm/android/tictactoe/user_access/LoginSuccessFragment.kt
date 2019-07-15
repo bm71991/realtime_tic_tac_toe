@@ -30,7 +30,11 @@ class LoginSuccessFragment : Fragment()  {
         val findGameButton = v.findViewById<Button>(R.id.find_game_button)
 
         mViewModel.getGameStartStatus().observe(this, Observer {
-            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+            if (it == mViewModel.START_GAME)    {
+                mCallback.onStartGameFragment()
+            } else {
+                Toast.makeText(context, "Error: $it", Toast.LENGTH_LONG).show()
+            }
         })
 
         findGameButton.setOnClickListener {

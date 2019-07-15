@@ -100,12 +100,12 @@ class TicTacToeActivity : AppCompatActivity(),
 
     /* Used in LoginFragment */
     override fun onStartLoginSuccessFragment() {
+        gameVm.clear()
         invalidateOptionsMenu()
         replaceFragment(LoginSuccessFragment())
     }
 
     override fun onStartGameFragment() {
-//        gameVm.clear()
         replaceFragment(GameFragment())
     }
 

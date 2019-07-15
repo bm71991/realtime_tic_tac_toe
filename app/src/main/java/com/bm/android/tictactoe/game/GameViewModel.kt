@@ -11,23 +11,23 @@ import com.google.firebase.firestore.ListenerRegistration
 
 class GameViewModel: ViewModel()  {
     private val mAuth = FirebaseAuth.getInstance()
-    private var opponent = ""
+    var opponent = ""
     private var gameId = ""
+    val START_GAME = "start game"
     val gameSetupCallback =  object : GameRepository.GameSetupInterface  {
         override fun onPlayerAdded(playerAdded:String, gameStartListener:ListenerRegistration?) {
             gameStartListener?.remove()
             opponent = playerAdded
-            gameStartStatus.value = opponent
+            gameStartStatus.value = START_GAME
         }
     }
     private val mGameRepository = GameRepository(gameSetupCallback)
     private var gameStartStatus = MutableLiveData<String>()
 
     fun getGameStartStatus():LiveData<String> = gameStartStatus
-    /**********************************************************
+    /***************************************************************
      * findGame calls matchPlayers in GameRepository, which
-     * will either return code "MATCHED_PLAYERS" or
-     * "MADE_NEW_PAIR."
+     * will either return code "MATCHED_PLAYERS" or MADE_NEW_PAIR.
      * If code == MATCHED_PLAYERS:
      * The playerPair of the matched players will be deleted
      * from firestore and a new Game document will be created
@@ -35,7 +35,13 @@ class GameViewModel: ViewModel()  {
      * identifier is the id field from the erased player pair,
      * which the opponent will have saved in its own
      * GameViewModel.
-     *********************************************************/
+     * if code == MADE_NEW_PAIR:
+     * A listener waits for the creation of a Game document whose
+     * id is the id of the PlayerPair object which was just
+     * created. From this new document, the client can obtain
+     * details about the game, such as the name of the opponent
+     * and which player plays first.
+     *************************************************************/
     fun findGame()  {
         mGameRepository.matchPlayers()
             .addOnSuccessListener {
@@ -54,7 +60,7 @@ class GameViewModel: ViewModel()  {
                 }
             }
             .addOnFailureListener {
-                Log.i("test",  it.toString())
+                gameStartStatus.value = it.toString()
             }
     }
 
@@ -64,7 +70,8 @@ class GameViewModel: ViewModel()  {
                 onPlayerMatch()
             }
             .addOnFailureListener {
-                Log.i("test", it.toString())
+                gameStartStatus.value = it.toString()
+                //undo findGame
             }
     }
 
@@ -72,16 +79,17 @@ class GameViewModel: ViewModel()  {
         Log.i("test", "game id = " + gameId)
         mGameRepository.onPlayerMatch(gameId, PlayerPair(opponent, mAuth.currentUser!!.displayName!!))
             .addOnSuccessListener {
-                Log.i("test", "new game document should have been added")
+                gameStartStatus.value = START_GAME
             }
             .addOnFailureListener {
-                Log.i("test", it.toString())
+                gameStartStatus.value = it.toString()
+                //undo deletePlayerPair and findGame
             }
     }
 
-
     /* Called in TicTacToeActivity to clear GameViewModel (in case I add "play another game" functionality) */
     fun clear()    {
+        gameStartStatus = MutableLiveData()
         opponent = ""
         gameId = ""
     }
@@ -89,6 +97,5 @@ class GameViewModel: ViewModel()  {
     fun onJoinGame(playerPair: PlayerPair) {
         opponent = playerPair.player1
         gameId = playerPair.id
-        gameStartStatus.value = opponent
     }
 }
