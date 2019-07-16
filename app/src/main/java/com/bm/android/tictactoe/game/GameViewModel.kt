@@ -25,6 +25,8 @@ class GameViewModel: ViewModel()  {
     private var gameStartStatus = MutableLiveData<String>()
 
     fun getGameStartStatus():LiveData<String> = gameStartStatus
+
+    fun getUserDisplayName() = mAuth.currentUser!!.displayName
     /***************************************************************
      * findGame calls matchPlayers in GameRepository, which
      * will either return code "MATCHED_PLAYERS" or MADE_NEW_PAIR.

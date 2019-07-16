@@ -32,4 +32,9 @@
     Menu Strings
     ******************************************/
     <string name="log_out">Log out</string>
+
+    /*******************************************
+    Game Strings
+    *******************************************/
+    <string name="game_title">%1$s versus %2$s</string>
 </resources>
