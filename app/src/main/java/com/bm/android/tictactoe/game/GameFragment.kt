@@ -1,6 +1,7 @@
 package com.bm.android.tictactoe.game
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,10 +14,10 @@ import kotlinx.android.synthetic.main.fragment_game.*
 
 class GameFragment : Fragment()  {
 //    private val mCallback by lazy {
-//        context as SignupSuccessFragmentInterface
+//        context as GameFragmentInterface
 //    }
 //
-//    interface SignupSuccessFragmentInterface  {
+//    interface GameFragmentInterface  {
 //
 //    }
     private lateinit var mViewAdapter: RecyclerView.Adapter<*>
@@ -24,7 +25,6 @@ class GameFragment : Fragment()  {
     private val mViewModel by lazy {
         ViewModelProviders.of(activity!!).get(GameViewModel::class.java)
     }
-
 
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?,
@@ -35,14 +35,12 @@ class GameFragment : Fragment()  {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initBoard()
-
         setGameTitle()
     }
 
     private fun initBoard() {
         mViewManager = GridLayoutManager(activity, 3)
-        mViewAdapter = BoardAdapter()
-
+        mViewAdapter = BoardAdapter(mViewModel.getBoardPlays(), mViewModel.itemClickHandler)
         board.apply {
             setHasFixedSize(true)
             layoutManager = mViewManager
@@ -52,6 +50,7 @@ class GameFragment : Fragment()  {
 
     private fun setGameTitle()  {
         game_title.text = getString(R.string.game_title,
-            mViewModel.getUserDisplayName(), mViewModel.opponent)
+            mViewModel.getUserDisplayName(), mViewModel.getOpponent())
+        Log.i("test", "allowed to make move: ${mViewModel.allowedToMakeMove}")
     }
 }

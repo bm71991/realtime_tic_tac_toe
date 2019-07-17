@@ -2,11 +2,13 @@ package com.bm.android.tictactoe
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProviders
+import com.bm.android.tictactoe.game.BoardAdapter
 import com.bm.android.tictactoe.game.GameFragment
 import com.bm.android.tictactoe.game.GameViewModel
 import com.bm.android.tictactoe.user_access.*

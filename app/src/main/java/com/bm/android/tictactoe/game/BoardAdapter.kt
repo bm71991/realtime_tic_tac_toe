@@ -6,9 +6,11 @@ import android.view.ViewGroup
 import com.bm.android.tictactoe.R
 import com.bm.android.tictactoe.game.views.GridViewItem
 
-class BoardAdapter :
+class BoardAdapter(private var boardPlays:ArrayList<String>, val itemClickCallback:ItemClickInterface) :
     RecyclerView.Adapter<BoardAdapter.BoardItemViewHolder>() {
-    var boardPlays = arrayListOf("", "", "", "", "", "", "", "", "")
+    interface ItemClickInterface    {
+        fun onClickItem(position:Int, gridItem: GridViewItem, adapter:BoardAdapter)
+    }
 
     class BoardItemViewHolder(val gridItem: GridViewItem) : RecyclerView.ViewHolder(gridItem)
 
@@ -24,6 +26,9 @@ class BoardAdapter :
 
         gridItem.setBackgroundResource(getBorderId(position))
         gridItem.text = boardPlays[position]
+        gridItem.setOnClickListener {
+            itemClickCallback.onClickItem(position, gridItem, this)
+        }
     }
 
     override fun getItemCount() = boardPlays.size
@@ -34,7 +39,6 @@ class BoardAdapter :
         6,7 ->  R.drawable.right_border
         else -> R.drawable.no_border
     }
-
 }
 
 

@@ -37,4 +37,5 @@
     Game Strings
     *******************************************/
     <string name="game_title">%1$s versus %2$s</string>
+    <string name="finding_another_player">Finding Another Player...</string>
 </resources>

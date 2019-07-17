@@ -1,5 +1,6 @@
 package com.bm.android.tictactoe.user_access
 
+import android.opengl.Visibility
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,6 +14,7 @@ import androidx.lifecycle.ViewModelProviders
 import com.bm.android.tictactoe.R
 import com.bm.android.tictactoe.game.GameViewModel
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.android.synthetic.main.fragment_login_success.*
 
 class LoginSuccessFragment : Fragment()  {
     private val mCallback by lazy {
@@ -25,9 +27,12 @@ class LoginSuccessFragment : Fragment()  {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        val v = inflater.inflate(R.layout.fragment_login_success, container, false)
+        return inflater.inflate(R.layout.fragment_login_success, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         val mViewModel = ViewModelProviders.of(activity!!).get(GameViewModel::class.java)
-        val findGameButton = v.findViewById<Button>(R.id.find_game_button)
 
         mViewModel.getGameStartStatus().observe(this, Observer {
             if (it == mViewModel.START_GAME)    {
@@ -37,9 +42,15 @@ class LoginSuccessFragment : Fragment()  {
             }
         })
 
-        findGameButton.setOnClickListener {
+        find_game_button.setOnClickListener {
+            displayLoading()
             mViewModel.findGame()
         }
-        return v
     }
+
+    private fun displayLoading()    {
+        login_success_layout.visibility = View.GONE
+        loading_layout.visibility = View.VISIBLE
+    }
+
 }

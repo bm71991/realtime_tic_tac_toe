@@ -1,7 +1,6 @@
 package com.bm.android.tictactoe.repositories
 
 import android.util.Log
-import androidx.core.view.DragStartHelper
 import com.bm.android.tictactoe.game.models.Game
 import com.bm.android.tictactoe.game.models.MatchPlayersInfo
 import com.bm.android.tictactoe.game.models.PlayerPair
@@ -61,7 +60,7 @@ class GameRepository(private val gameSetupCallback:GameSetupInterface)   {
         val gameRef = db.collection(GAMES_COLLECTION).document(gameId)
         val playerList = arrayListOf(playerPair.player1, playerPair.player2)
 
-        val newGame = Game(playerList, "started", "", playerPair.player1)
+        val newGame = Game(playerList, "started", "", playerPair.player1, -1)
         return gameRef.set(newGame)
     }
 
@@ -69,7 +68,7 @@ class GameRepository(private val gameSetupCallback:GameSetupInterface)   {
         return waitingPlayersRef.update("playerPairs", FieldValue.arrayRemove(playerPair))
     }
 
-    fun waitForPlayerMatchup(gameId:String) {
+    fun waitForPlayerMatchup(gameId:String):ListenerRegistration? {
         val gameDocRef = db.collection(GAMES_COLLECTION).document(gameId)
         var gameStartListener:ListenerRegistration? = null
 
@@ -81,11 +80,52 @@ class GameRepository(private val gameSetupCallback:GameSetupInterface)   {
                 }
                 if (snapshot != null && snapshot.exists()) {
                     val gameInfo = snapshot.toObject(Game::class.java)
-                    val addedPlayer = gameInfo!!.players[1]
-                    gameSetupCallback.onPlayerAdded(addedPlayer, gameStartListener)
+                    val playerAdded = gameInfo!!.players[1]
+                    gameSetupCallback.onPlayerAdded(playerAdded, gameStartListener)
                 } else {
                     Log.d(TAG, "Current data: null")
                 }
             })
+        return gameStartListener
+    }
+
+    fun addGameListener(gameId:String):ListenerRegistration?  {
+        val gameDocRef = db.collection(GAMES_COLLECTION).document(gameId)
+        var gameListener:ListenerRegistration? = null
+
+        gameListener = gameDocRef.addSnapshotListener(
+            fun(snapshot: DocumentSnapshot?, e: FirebaseFirestoreException?) {
+                if (e != null) {
+                    Log.d(TAG, "Listen failed.", e)
+                    return
+                }
+
+                if (snapshot != null && snapshot.exists()) {
+
+                }
+            })
+        return gameListener
+    }
+
+    fun switchTurns(opponent:String, playIndex:Int, gameId:String):Task<Void>  {
+        val gameDocRef = db.collection(GAMES_COLLECTION).document(gameId)
+        return gameDocRef.update(
+            mapOf<String, Any>(
+                "lastPlay" to playIndex,
+                "currentTurn" to opponent
+            ))
+    }
+
+    fun sendGameStatusChange(opponent:String, playIndex:Int, winner:String,
+                      gameId:String):Task<Void>   {
+        val gameDocRef = db.collection(GAMES_COLLECTION).document(gameId)
+
+        return gameDocRef.update(
+            mapOf<String, Any>(
+                "lastPlay" to playIndex,
+                "currentTurn" to opponent,
+                "status" to "ended",
+                "winner" to winner
+            ))
     }
 }

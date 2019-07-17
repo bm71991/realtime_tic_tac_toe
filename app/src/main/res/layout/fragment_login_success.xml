@@ -1,16 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical" android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:gravity="center">
-    <TextView
-            android:layout_width="wrap_content"
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    <LinearLayout
+            android:orientation="vertical" android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/login_success_layout"
+            android:gravity="center">
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/login_success"
+                android:textSize="25sp"/>
+        <Button
+                android:id="@+id/find_game_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/find_game" />
+
+    </LinearLayout>
+    <LinearLayout
+            android:orientation="vertical" android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/login_success"
-            android:textSize="25sp"/>
-    <Button
-            android:id="@+id/find_game_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/find_game" />
-</LinearLayout>
+            android:id="@+id/loading_layout"
+            android:visibility="gone"
+            android:layout_centerHorizontal="true"
+            android:layout_centerInParent="true">
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/finding_another_player"
+                android:id="@+id/finding_another_player"/>
+        <ProgressBar android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:id="@+id/finding_player_progressbar"
+                     android:layout_gravity="center_horizontal"/>
+    </LinearLayout>
+</RelativeLayout>
+
+
+
