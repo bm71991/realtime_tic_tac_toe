@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.SimpleItemAnimator
 import com.bm.android.tictactoe.R
 import kotlinx.android.synthetic.main.fragment_game.*
 
@@ -20,10 +21,22 @@ class GameFragment : Fragment()  {
 //    interface GameFragmentInterface  {
 //
 //    }
+
+    interface DataChangeInterface {
+        fun notifyAdapterOfChange(position:Int)
+    }
+
     private lateinit var mViewAdapter: RecyclerView.Adapter<*>
     private lateinit var mViewManager: RecyclerView.LayoutManager
     private val mViewModel by lazy {
         ViewModelProviders.of(activity!!).get(GameViewModel::class.java)
+            .also {
+                it.dataChangeCallback = object : DataChangeInterface {
+                    override fun notifyAdapterOfChange(position: Int) {
+                        board.adapter?.notifyItemChanged(position)
+                    }
+                }
+            }
     }
 
     override fun onCreateView(inflater: LayoutInflater,
@@ -46,11 +59,12 @@ class GameFragment : Fragment()  {
             layoutManager = mViewManager
             adapter = mViewAdapter
         }
+        /* Disables animation when a RecyclerView item is changed */
+        (board.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
     }
 
     private fun setGameTitle()  {
         game_title.text = getString(R.string.game_title,
             mViewModel.getUserDisplayName(), mViewModel.getOpponent())
-        Log.i("test", "allowed to make move: ${mViewModel.allowedToMakeMove}")
     }
 }

@@ -10,10 +10,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.*
 import java.util.*
 
-class GameRepository(private val gameSetupCallback:GameSetupInterface)   {
-    interface GameSetupInterface    {
+class GameRepository(private val gameplayCallback:GameplayInterface)   {
+    interface GameplayInterface    {
         fun onPlayerAdded(playerAdded:String, gameStartListener: ListenerRegistration?)
+        fun onGameInfoChange(gameInfo:Game, gameListener:ListenerRegistration?)
     }
+
 
     private val db = FirebaseFirestore.getInstance()
     private val mAuth = FirebaseAuth.getInstance()
@@ -81,7 +83,8 @@ class GameRepository(private val gameSetupCallback:GameSetupInterface)   {
                 if (snapshot != null && snapshot.exists()) {
                     val gameInfo = snapshot.toObject(Game::class.java)
                     val playerAdded = gameInfo!!.players[1]
-                    gameSetupCallback.onPlayerAdded(playerAdded, gameStartListener)
+                    gameplayCallback.onPlayerAdded(playerAdded, gameStartListener)
+                    addGameListener(gameId)
                 } else {
                     Log.d(TAG, "Current data: null")
                 }
@@ -101,7 +104,8 @@ class GameRepository(private val gameSetupCallback:GameSetupInterface)   {
                 }
 
                 if (snapshot != null && snapshot.exists()) {
-
+                    val gameInfo = snapshot.toObject(Game::class.java)
+                    gameplayCallback.onGameInfoChange(gameInfo!!, gameListener)
                 }
             })
         return gameListener

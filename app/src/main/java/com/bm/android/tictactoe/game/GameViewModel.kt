@@ -1,10 +1,10 @@
 package com.bm.android.tictactoe.game
 
 import android.util.Log
-import android.widget.GridView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.bm.android.tictactoe.game.models.Game
 import com.bm.android.tictactoe.game.models.GameState
 import com.bm.android.tictactoe.game.models.PlayerPair
 import com.bm.android.tictactoe.game.views.GridViewItem
@@ -12,31 +12,54 @@ import com.bm.android.tictactoe.repositories.GameRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ListenerRegistration
 
-class GameViewModel(): ViewModel()  {
+class GameViewModel: ViewModel()  {
 
     private val mAuth = FirebaseAuth.getInstance()
     val START_GAME = "start game"
     var allowedToMakeMove = false
     private var gameState = GameState()
     private var playerMatchupListener:ListenerRegistration? = null
+    var dataChangeCallback: GameFragment.DataChangeInterface? = null
 
-    private val gameSetupCallback =  object : GameRepository.GameSetupInterface  {
+    private val gameplayCallback =  object : GameRepository.GameplayInterface  {
         //This is called only if that user created a new game and is player 1
         override fun onPlayerAdded(playerAdded:String, gameStartListener:ListenerRegistration?) {
             gameStartListener?.remove()
             gameState.opponent = playerAdded
             gameState.playerLetter = "X"
-            allowedToMakeMove = true
             gameStartStatus.value = START_GAME
+            //gameListener added in GameRepository after this callback
+        }
+
+        override fun onGameInfoChange(gameInfo: Game, gameListener: ListenerRegistration?) {
+            if (gameInfo.status == "ended") {
+                if (gameInfo.winner == "none")  {
+                    Log.i("test", "it is a draw")
+                } else {
+                    Log.i("test", "${gameInfo.winner} won the game.")
+                }
+                gameState.gameOver = true
+            }
+
+            if (gameInfo.currentTurn == getUserDisplayName())   {
+                val lastPlayIndex = gameInfo.lastPlay
+                if (lastPlayIndex != -1)    {
+                    gameState.boardPlays[lastPlayIndex] = getOpponentLetter()
+                    dataChangeCallback?.notifyAdapterOfChange(lastPlayIndex)
+                    gameState.turnCount++
+                }
+                allowedToMakeMove = true
+            }
         }
     }
 
-    private val mGameRepository = GameRepository(gameSetupCallback)
+    private val mGameRepository = GameRepository(gameplayCallback)
     private var gameStartStatus = MutableLiveData<String>()
 
     fun getGameStartStatus():LiveData<String> = gameStartStatus
     fun getBoardPlays() = gameState.boardPlays
     fun getOpponent() = gameState.opponent
+    fun getOpponentLetter() = if (gameState.playerLetter == "X") "O" else "X"
 
     fun getUserDisplayName() = mAuth.currentUser!!.displayName.toString()
     /***************************************************************
@@ -96,6 +119,7 @@ class GameViewModel(): ViewModel()  {
             getUserDisplayName()))
             .addOnSuccessListener {
                 gameStartStatus.value = START_GAME
+                mGameRepository.addGameListener(gameState.gameId)
             }
             .addOnFailureListener {
                 gameStartStatus.value = it.toString()
@@ -119,60 +143,27 @@ class GameViewModel(): ViewModel()  {
                 adapter.notifyItemChanged(position)
                 gameState.turnCount++
                 when {
-                    playerHasWon() -> {
+                    gameState.playerHasWon() -> {
                         gameState.gameOver = true
                         mGameRepository.sendGameStatusChange(gameState.opponent,
                             position, getUserDisplayName(), gameState.gameId)
                         //gameOverMessage.setValue(You have won the game)
                     }
                     gameState.turnCount == 9 -> {
+                        gameState.gameOver = true
                         mGameRepository.sendGameStatusChange(gameState.opponent,
                             position, "none", gameState.gameId)
                     }
-                    else -> mGameRepository.switchTurns(gameState.opponent, position, gameState.gameId)
+                    else -> {
+                        mGameRepository.switchTurns(gameState.opponent, position, gameState.gameId)
+                        allowedToMakeMove = false
+                    }
                 }
             }
         }
     }
 
-    fun moveHasBeenPlayed(gridItem:GridViewItem) = gridItem.text != ""
-
-
-
-
-
-    private fun getPlayerCount(boardIndexes:ArrayList<Int>, boardPlays: ArrayList<String>): Int {
-        //counts the number of Xs or Os for a certain list of indexes on the game board
-        return arrayOf(
-            boardPlays[boardIndexes[0]],
-            boardPlays[boardIndexes[1]],
-            boardPlays[boardIndexes[2]])
-            .count  {it == gameState.playerLetter}
-    }
-
-    fun playerHasWon():Boolean {
-        //contains lists of all possible board indexes from which a player could win the game
-        val indexesToCheck = arrayListOf(
-            arrayListOf(0,1,2),
-            arrayListOf(3,4,5),
-            arrayListOf(6,7,8),
-            arrayListOf(0,4,8),
-            arrayListOf(2,4,6),
-            arrayListOf(0,3,6),
-            arrayListOf(1,4,7),
-            arrayListOf(2,5,8)
-        )
-
-        /* check each possible win combination: if there are 3 of the player's letter in any
-         of the combinations, that player has won the game
-         */
-        indexesToCheck.forEach  {
-            if (getPlayerCount(it, gameState.boardPlays) == 3)    {
-                return true
-            }
-        }
-        return false
-    }
+    private fun moveHasBeenPlayed(gridItem:GridViewItem) = gridItem.text != ""
 
     /* Called in TicTacToeActivity to clear GameViewModel (in case I add "play another game" functionality) */
     fun clear()    {
@@ -180,5 +171,6 @@ class GameViewModel(): ViewModel()  {
         allowedToMakeMove = false
         playerMatchupListener?.remove()
         gameState = GameState()
+        dataChangeCallback = null
     }
 }
