@@ -38,4 +38,6 @@
     *******************************************/
     <string name="game_title">%1$s versus %2$s</string>
     <string name="finding_another_player">Finding Another Player...</string>
+    <string name="end_of_game">%1$s Play again?</string>
+    <string name="find_another_game">Find another game.</string>
 </resources>

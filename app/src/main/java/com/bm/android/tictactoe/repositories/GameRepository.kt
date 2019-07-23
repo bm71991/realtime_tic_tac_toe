@@ -14,6 +14,7 @@ class GameRepository(private val gameplayCallback:GameplayInterface)   {
     interface GameplayInterface    {
         fun onPlayerAdded(playerAdded:String, gameStartListener: ListenerRegistration?)
         fun onGameInfoChange(gameInfo:Game, gameListener:ListenerRegistration?)
+        fun setGameListener(gameListener: ListenerRegistration?)
     }
 
 
@@ -106,6 +107,7 @@ class GameRepository(private val gameplayCallback:GameplayInterface)   {
                 if (snapshot != null && snapshot.exists()) {
                     val gameInfo = snapshot.toObject(Game::class.java)
                     gameplayCallback.onGameInfoChange(gameInfo!!, gameListener)
+                    gameplayCallback.setGameListener(gameListener)
                 }
             })
         return gameListener

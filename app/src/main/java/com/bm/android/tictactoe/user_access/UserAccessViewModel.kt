@@ -31,6 +31,7 @@ class UserAccessViewModel : ViewModel() {
                 checkFirestore(username, email, password)
             }
             .addOnFailureListener {
+                Log.i("test", "signupUser Fail Listener current user = " + (mAuth.currentUser))
                 signupStatus.value = it.message.toString()
             }
     }
@@ -41,8 +42,8 @@ class UserAccessViewModel : ViewModel() {
                 setUsernameAsDisplayName(username)
             }
             .addOnFailureListener {
+                Log.i("test", "checkFirestore Fail Listener current user = " + (mAuth.currentUser))
                 undoFirebaseRegister()
-                Log.i("test", "User is logged in: " + (mAuth.currentUser))
                 signupStatus.value = it.message.toString()
             }
     }
@@ -57,6 +58,7 @@ class UserAccessViewModel : ViewModel() {
             .addOnFailureListener {
                 undoFirebaseRegister()
                 deleteCancelledUserDocument(username)
+                Log.i("test", "setUsernameAsDisplay Fail Listener current user = " + (mAuth.currentUser))
                 signupStatus.value = it.message.toString()
             }
     }

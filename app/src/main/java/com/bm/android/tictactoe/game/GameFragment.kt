@@ -5,7 +5,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -49,6 +51,14 @@ class GameFragment : Fragment()  {
         super.onViewCreated(view, savedInstanceState)
         initBoard()
         setGameTitle()
+        mViewModel.getGameplayStatus().observe(this, Observer {
+            endgame_layout.visibility = View.VISIBLE
+            game_title.visibility = View.GONE
+            endgame_textview.text = getString(R.string.end_of_game, it)
+            find_another_game_btn.setOnClickListener {
+
+            }
+        })
     }
 
     private fun initBoard() {

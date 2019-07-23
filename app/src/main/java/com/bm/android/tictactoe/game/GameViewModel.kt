@@ -19,7 +19,9 @@ class GameViewModel: ViewModel()  {
     var allowedToMakeMove = false
     private var gameState = GameState()
     private var playerMatchupListener:ListenerRegistration? = null
+    private var mGameListener:ListenerRegistration? = null
     var dataChangeCallback: GameFragment.DataChangeInterface? = null
+    private var gameplayStatus = MutableLiveData<String>()
 
     private val gameplayCallback =  object : GameRepository.GameplayInterface  {
         //This is called only if that user created a new game and is player 1
@@ -34,11 +36,13 @@ class GameViewModel: ViewModel()  {
         override fun onGameInfoChange(gameInfo: Game, gameListener: ListenerRegistration?) {
             if (gameInfo.status == "ended") {
                 if (gameInfo.winner == "none")  {
+                    gameplayStatus.value = "it is a draw"
                     Log.i("test", "it is a draw")
                 } else {
+                    gameplayStatus.value = "${gameInfo.winner} won the game."
                     Log.i("test", "${gameInfo.winner} won the game.")
                 }
-                gameState.gameOver = true
+                setGameOver()
             }
 
             if (gameInfo.currentTurn == getUserDisplayName())   {
@@ -51,17 +55,25 @@ class GameViewModel: ViewModel()  {
                 allowedToMakeMove = true
             }
         }
+
+        override fun setGameListener(gameListener:ListenerRegistration?)    {
+            mGameListener = gameListener
+        }
     }
 
     private val mGameRepository = GameRepository(gameplayCallback)
     private var gameStartStatus = MutableLiveData<String>()
 
+    fun getGameplayStatus():LiveData<String> = gameplayStatus
     fun getGameStartStatus():LiveData<String> = gameStartStatus
     fun getBoardPlays() = gameState.boardPlays
     fun getOpponent() = gameState.opponent
     fun getOpponentLetter() = if (gameState.playerLetter == "X") "O" else "X"
-
     fun getUserDisplayName() = mAuth.currentUser!!.displayName.toString()
+    fun setGameOver()   {
+        gameState.gameOver = true
+        mGameListener?.remove()
+    }
     /***************************************************************
      * findGame calls matchPlayers in GameRepository, which
      * will either return code "MATCHED_PLAYERS" or MADE_NEW_PAIR.
@@ -144,13 +156,11 @@ class GameViewModel: ViewModel()  {
                 gameState.turnCount++
                 when {
                     gameState.playerHasWon() -> {
-                        gameState.gameOver = true
                         mGameRepository.sendGameStatusChange(gameState.opponent,
                             position, getUserDisplayName(), gameState.gameId)
                         //gameOverMessage.setValue(You have won the game)
                     }
                     gameState.turnCount == 9 -> {
-                        gameState.gameOver = true
                         mGameRepository.sendGameStatusChange(gameState.opponent,
                             position, "none", gameState.gameId)
                     }
@@ -168,8 +178,10 @@ class GameViewModel: ViewModel()  {
     /* Called in TicTacToeActivity to clear GameViewModel (in case I add "play another game" functionality) */
     fun clear()    {
         gameStartStatus = MutableLiveData()
+        gameplayStatus = MutableLiveData()
         allowedToMakeMove = false
         playerMatchupListener?.remove()
+        mGameListener?.remove()
         gameState = GameState()
         dataChangeCallback = null
     }
