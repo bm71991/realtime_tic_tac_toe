@@ -32,25 +32,28 @@ class LoginSuccessFragment : Fragment()  {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val mViewModel = ViewModelProviders.of(activity!!).get(GameViewModel::class.java)
+//        val mViewModel = ViewModelProviders.of(activity!!).get(GameViewModel::class.java)
 
-        mViewModel.getGameStartStatus().observe(this, Observer {
-            if (it == mViewModel.START_GAME)    {
-                mCallback.onStartGameFragment()
-            } else {
-                Toast.makeText(context, "Error: $it", Toast.LENGTH_LONG).show()
-            }
-        })
+//        mViewModel.getGameStartStatus().observe(this, Observer {
+//            if (it == mViewModel.START_GAME)    {
+//                mCallback.onStartGameFragment()
+//            } else {
+//                Toast.makeText(context, "Error: $it", Toast.LENGTH_LONG).show()
+//            }
+//        })
 
         find_game_button.setOnClickListener {
-            displayLoading()
-            mViewModel.findGame()
+            mCallback.onStartGameFragment()
         }
+//        find_game_button.setOnClickListener {
+//            displayLoading()
+//            mViewModel.findGame()
+//        }
     }
-
-    private fun displayLoading()    {
-        login_success_layout.visibility = View.GONE
-        loading_layout.visibility = View.VISIBLE
-    }
+//
+//    private fun displayLoading()    {
+//        login_success_layout.visibility = View.GONE
+//        loading_layout.visibility = View.VISIBLE
+//    }
 
 }

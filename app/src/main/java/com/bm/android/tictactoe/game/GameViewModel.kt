@@ -30,14 +30,13 @@ class GameViewModel: ViewModel()  {
             gameState.opponent = playerAdded
             gameState.playerLetter = "X"
             gameStartStatus.value = START_GAME
-            //gameListener added in GameRepository after this callback
         }
 
         override fun onGameInfoChange(gameInfo: Game, gameListener: ListenerRegistration?) {
             if (gameInfo.status == "ended") {
                 if (gameInfo.winner == "none")  {
-                    gameplayStatus.value = "it is a draw"
-                    Log.i("test", "it is a draw")
+                    gameplayStatus.value = "it is a draw."
+                    Log.i("test", "it is a draw.")
                 } else {
                     gameplayStatus.value = "${gameInfo.winner} won the game."
                     Log.i("test", "${gameInfo.winner} won the game.")
@@ -183,6 +182,5 @@ class GameViewModel: ViewModel()  {
         playerMatchupListener?.remove()
         mGameListener?.remove()
         gameState = GameState()
-        dataChangeCallback = null
     }
 }

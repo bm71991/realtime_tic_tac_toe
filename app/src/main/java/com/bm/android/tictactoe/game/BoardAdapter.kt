@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import com.bm.android.tictactoe.R
 import com.bm.android.tictactoe.game.views.GridViewItem
 
-class BoardAdapter(private var boardPlays:ArrayList<String>, val itemClickCallback:ItemClickInterface) :
+class BoardAdapter(var boardPlays:ArrayList<String>, private val itemClickCallback:ItemClickInterface) :
     RecyclerView.Adapter<BoardAdapter.BoardItemViewHolder>() {
     interface ItemClickInterface    {
         fun onClickItem(position:Int, gridItem: GridViewItem, adapter:BoardAdapter)
@@ -29,6 +29,10 @@ class BoardAdapter(private var boardPlays:ArrayList<String>, val itemClickCallba
         gridItem.setOnClickListener {
             itemClickCallback.onClickItem(position, gridItem, this)
         }
+    }
+
+    fun resetBoard(boardPlays:ArrayList<String>)    {
+        this.boardPlays = boardPlays
     }
 
     override fun getItemCount() = boardPlays.size
