@@ -11,7 +11,7 @@ users {
   <username>  {
     email: <email>,
     uid: <uid>
-  }
+  },
   ...
 }
 ```
